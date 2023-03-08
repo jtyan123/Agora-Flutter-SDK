@@ -974,6 +974,10 @@ class RtcEngineImpl extends rtc_engine_ex_binding.RtcEngineExImpl
     ));
   }
 
+    @override
+  int getVideoFrameBufferManager() {
+    return _globalVideoViewController.videoFrameBufferManagerIntPtr;
+  }
   //////////////////////////
 }
 
