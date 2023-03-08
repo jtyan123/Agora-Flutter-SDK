@@ -5037,4 +5037,10 @@ class RtcEngineImpl implements RtcEngine {
     final result = rm['result'];
     return result as int;
   }
+  
+  @override
+  int getVideoFrameBufferManager() {
+    // TODO: implement getVideoFrameBufferManager
+    throw UnimplementedError();
+  }
 }
