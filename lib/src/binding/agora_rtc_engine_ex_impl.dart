@@ -1126,4 +1126,9 @@ class RtcEngineExImpl extends RtcEngineImpl implements RtcEngineEx {
       throw AgoraRtcException(code: result);
     }
   }
+  @override
+  int getVideoFrameBufferManager() {
+    // TODO: implement getVideoFrameBufferManager
+    throw UnimplementedError();
+  }
 }
