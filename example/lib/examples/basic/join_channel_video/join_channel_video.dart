@@ -5,7 +5,10 @@ import 'package:agora_rtc_engine_example/components/log_sink.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-/// MultiChannel Example
+/// Demo steps:
+/// * First join a remote user
+/// * Click the "Join channel" button
+/// * Click the switch frequently to simulate create/destory the Flutter texture
 class JoinChannelVideo extends StatefulWidget {
   /// Construct the [JoinChannelVideo]
   const JoinChannelVideo({Key? key}) : super(key: key);
