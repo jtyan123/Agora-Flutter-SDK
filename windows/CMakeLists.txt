@@ -12,6 +12,11 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 # not be changed
 set(PLUGIN_NAME "agora_rtc_engine_plugin")
 
+if(WIN32)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+endif()
+
 set(IRIS_SDK_DOWNLOAD_URL "https://download.agora.io/sdk/release/iris_4.1.1.1-rc.1_DCG_Windows_Video_20230228_0253.zip")
 set(IRIS_SDK_DOWNLOAD_NAME "iris_4.1.1.1-rc.1_DCG_Windows")
 set(RTC_SDK_DOWNLOAD_NAME "Agora_Native_SDK_for_Windows_FULL")
