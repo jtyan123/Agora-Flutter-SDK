@@ -34,21 +34,7 @@ TextureRender::TextureRender(flutter::BinaryMessenger *messenger,
 
 TextureRender::~TextureRender()
 {
-    if (videoFrameBufferManager_)
-    {
-        videoFrameBufferManager_->DisableVideoFrameBuffer(this);
-        videoFrameBufferManager_ = nullptr;
-    }
-
-    semaphore_.Wait();
-
-    if (registrar_ && texture_id_ != -1)
-    {
-        registrar_->UnregisterTexture(texture_id_);
-
-        registrar_ = nullptr;
-        texture_id_ = -1;
-    }
+    Dispose();
 }
 
 int64_t TextureRender::texture_id() { return texture_id_; }
@@ -103,28 +89,15 @@ TextureRender::CopyPixelBuffer(size_t width, size_t height)
         return nullptr;
     }
 
-    semaphore_.Increace();
-
     if (!flutter_desktop_pixel_buffer_)
     {
         flutter_desktop_pixel_buffer_ =
             std::make_unique<FlutterDesktopPixelBuffer>();
-
-        // Unlocks mutex after texture is processed.
-        flutter_desktop_pixel_buffer_->release_callback =
-            [](void *release_context)
-        {
-            auto mutex = static_cast<::Semaphore *>(release_context);
-            mutex->Decreace();
-        };
     }
 
     flutter_desktop_pixel_buffer_->buffer = buffer_.data();
     flutter_desktop_pixel_buffer_->width = frame_width_;
     flutter_desktop_pixel_buffer_->height = frame_height_;
-
-    // Releases unique_lock and set mutex pointer for release context.
-    flutter_desktop_pixel_buffer_->release_context = &semaphore_;
 
     return flutter_desktop_pixel_buffer_.get();
 }
@@ -148,5 +121,28 @@ void TextureRender::UpdateData(unsigned int uid, const std::string &channelId, u
     if (videoFrameBufferManager_)
     {
         videoFrameBufferManager_->EnableVideoFrameBuffer(buffer, &config);
+    }
+}
+
+void TextureRender::Dispose()
+{
+    if (videoFrameBufferManager_)
+    {
+        videoFrameBufferManager_->DisableVideoFrameBuffer(this);
+        videoFrameBufferManager_ = nullptr;
+    }
+
+    if (registrar_ && texture_id_ != -1)
+    {
+        semaphore_.Increace();
+        registrar_->UnregisterTexture(texture_id_, [this]()
+                                      { semaphore_.Decreace(); });
+
+        // Block until the Flutter UnregisterTexture completed
+        semaphore_.Wait();
+        
+        registrar_ = nullptr;
+        texture_id_ = -1;
+        buffer_.clear();
     }
 }
