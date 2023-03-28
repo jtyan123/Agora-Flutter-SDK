@@ -55,16 +55,9 @@ class _State extends State<JoinChannelVideo> {
 
   Future<void> _initEngine() async {
     _engine = createAgoraRtcEngine();
-    localVideoViewController = VideoViewController(
-      rtcEngine: _engine,
-      canvas: const VideoCanvas(uid: 0),
-      useFlutterTexture: _isUseFlutterTexture,
-      useAndroidSurfaceView: _isUseAndroidSurfaceView,
-    );
     await _engine.initialize(RtcEngineContext(
       appId: config.appId,
     ));
-    await localVideoViewController.initializeRender();
 
     _engine.registerEventHandler(RtcEngineEventHandler(
       onError: (ErrorCodeType err, String msg) {
@@ -80,18 +73,6 @@ class _State extends State<JoinChannelVideo> {
       onUserJoined: (RtcConnection connection, int rUid, int elapsed) async {
         logSink.log(
             '[onUserJoined] connection: ${connection.toJson()} remoteUid: $rUid elapsed: $elapsed');
-
-        await remoteViewController?.disposeRender();
-
-        remoteViewController = VideoViewController.remote(
-          rtcEngine: _engine,
-          canvas: VideoCanvas(uid: rUid),
-          connection: RtcConnection(channelId: _controller.text),
-          useFlutterTexture: _isUseFlutterTexture,
-          useAndroidSurfaceView: _isUseAndroidSurfaceView,
-        );
-
-        await remoteViewController?.initializeRender();
 
         setState(() {
           remoteUid.add(rUid);
@@ -249,11 +230,38 @@ class _State extends State<JoinChannelVideo> {
                       const Text('Rendered by Flutter texture: '),
                       Switch(
                         value: isShow,
-                        onChanged: (changed) {
+                        onChanged: (changed) async {
+                          isShow = !isShow;
+
+                          if (isShow) {
+                            localVideoViewController = VideoViewController(
+                              rtcEngine: _engine,
+                              canvas: const VideoCanvas(uid: 0),
+                              useFlutterTexture: _isUseFlutterTexture,
+                              useAndroidSurfaceView: _isUseAndroidSurfaceView,
+                            );
+                            await localVideoViewController.initializeRender();
+
+                            if (remoteUid.isNotEmpty) {
+                              remoteViewController = VideoViewController.remote(
+                                rtcEngine: _engine,
+                                canvas: VideoCanvas(uid: remoteUid.first),
+                                connection:
+                                    RtcConnection(channelId: _controller.text),
+                                useFlutterTexture: _isUseFlutterTexture,
+                                useAndroidSurfaceView: _isUseAndroidSurfaceView,
+                              );
+
+                              await remoteViewController?.initializeRender();
+                            }
+                          } else {
+                            await localVideoViewController.disposeRender();
+                            await remoteViewController?.disposeRender();
+                            remoteViewController = null;
+                          }
+
                           setState(() {
                             // _isUseFlutterTexture = changed;
-
-                            isShow = !isShow;
                           });
                         },
                       )
