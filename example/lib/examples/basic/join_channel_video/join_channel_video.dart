@@ -25,6 +25,10 @@ class _State extends State<JoinChannelVideo> {
   bool _isUseAndroidSurfaceView = false;
   ChannelProfileType _channelProfileType =
       ChannelProfileType.channelProfileLiveBroadcasting;
+  bool isShow = false;
+
+  late VideoViewController localVideoViewController;
+  VideoViewController? remoteViewController;
 
   @override
   void initState() {
@@ -42,6 +46,10 @@ class _State extends State<JoinChannelVideo> {
 
   Future<void> _dispose() async {
     await _engine.leaveChannel();
+    await _engine.stopPreview();
+    await localVideoViewController.disposeRender();
+    await remoteViewController?.disposeRender();
+
     await _engine.release();
   }
 
@@ -62,9 +70,10 @@ class _State extends State<JoinChannelVideo> {
           isJoined = true;
         });
       },
-      onUserJoined: (RtcConnection connection, int rUid, int elapsed) {
+      onUserJoined: (RtcConnection connection, int rUid, int elapsed) async {
         logSink.log(
             '[onUserJoined] connection: ${connection.toJson()} remoteUid: $rUid elapsed: $elapsed');
+
         setState(() {
           remoteUid.add(rUid);
         });
@@ -134,38 +143,55 @@ class _State extends State<JoinChannelVideo> {
         if (!_isReadyPreview) return Container();
         return Stack(
           children: [
-            AgoraVideoView(
-              controller: VideoViewController(
-                rtcEngine: _engine,
-                canvas: const VideoCanvas(uid: 0),
-                useFlutterTexture: _isUseFlutterTexture,
-                useAndroidSurfaceView: _isUseAndroidSurfaceView,
-              ),
-            ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.of(remoteUid.map(
-                    (e) => SizedBox(
-                      width: 120,
-                      height: 120,
-                      child: AgoraVideoView(
-                        controller: VideoViewController.remote(
-                          rtcEngine: _engine,
-                          canvas: VideoCanvas(uid: e),
-                          connection:
-                              RtcConnection(channelId: _controller.text),
-                          useFlutterTexture: _isUseFlutterTexture,
-                          useAndroidSurfaceView: _isUseAndroidSurfaceView,
-                        ),
-                      ),
+            if (isShow)
+              Column(
+                children: [
+                  SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: Texture(
+                      textureId: localVideoViewController.getTextureId(),
                     ),
-                  )),
-                ),
+                  ),
+                  SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: Texture(
+                      textureId: localVideoViewController.getTextureId(),
+                    ),
+                  ),
+                ],
               ),
-            )
+            if (isShow)
+              Align(
+                alignment: Alignment.topLeft,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.of(remoteUid.map(
+                      (e) => Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: Texture(
+                              textureId: remoteViewController!.getTextureId(),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: Texture(
+                              textureId: remoteViewController!.getTextureId(),
+                            ),
+                          )
+                        ],
+                      ),
+                    )),
+                  ),
+                ),
+              )
           ],
         );
       },
@@ -192,51 +218,74 @@ class _State extends State<JoinChannelVideo> {
               controller: _controller,
               decoration: const InputDecoration(hintText: 'Channel ID'),
             ),
-            if (!kIsWeb &&
-                (defaultTargetPlatform == TargetPlatform.android ||
-                    defaultTargetPlatform == TargetPlatform.iOS))
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  if (defaultTargetPlatform == TargetPlatform.iOS)
-                    Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('Rendered by Flutter texture: '),
-                          Switch(
-                            value: _isUseFlutterTexture,
-                            onChanged: isJoined
-                                ? null
-                                : (changed) {
-                                    setState(() {
-                                      _isUseFlutterTexture = changed;
-                                    });
-                                  },
-                          )
-                        ]),
-                  if (defaultTargetPlatform == TargetPlatform.android)
-                    Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('Rendered by Android SurfaceView: '),
-                          Switch(
-                            value: _isUseAndroidSurfaceView,
-                            onChanged: isJoined
-                                ? null
-                                : (changed) {
-                                    setState(() {
-                                      _isUseAndroidSurfaceView = changed;
-                                    });
-                                  },
-                          ),
-                        ]),
-                ],
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Rendered by Flutter texture: '),
+                      Switch(
+                        value: isShow,
+                        onChanged: (changed) async {
+                          isShow = !isShow;
+
+                          if (isShow) {
+                            localVideoViewController = VideoViewController(
+                              rtcEngine: _engine,
+                              canvas: const VideoCanvas(uid: 0),
+                              useFlutterTexture: _isUseFlutterTexture,
+                              useAndroidSurfaceView: _isUseAndroidSurfaceView,
+                            );
+                            await localVideoViewController.initializeRender();
+
+                            if (remoteUid.isNotEmpty) {
+                              remoteViewController = VideoViewController.remote(
+                                rtcEngine: _engine,
+                                canvas: VideoCanvas(uid: remoteUid.first),
+                                connection:
+                                    RtcConnection(channelId: _controller.text),
+                                useFlutterTexture: _isUseFlutterTexture,
+                                useAndroidSurfaceView: _isUseAndroidSurfaceView,
+                              );
+
+                              await remoteViewController?.initializeRender();
+                            }
+                          } else {
+                            await localVideoViewController.disposeRender();
+                            await remoteViewController?.disposeRender();
+                            remoteViewController = null;
+                          }
+
+                          setState(() {
+                            // _isUseFlutterTexture = changed;
+                          });
+                        },
+                      )
+                    ]),
+                if (defaultTargetPlatform == TargetPlatform.android)
+                  Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Rendered by Android SurfaceView: '),
+                        Switch(
+                          value: _isUseAndroidSurfaceView,
+                          onChanged: isJoined
+                              ? null
+                              : (changed) {
+                                  setState(() {
+                                    _isUseAndroidSurfaceView = changed;
+                                  });
+                                },
+                        ),
+                      ]),
+              ],
+            ),
             const SizedBox(
               height: 20,
             ),

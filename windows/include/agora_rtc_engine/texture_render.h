@@ -63,6 +63,8 @@ public:
 
     void UpdateData(unsigned int uid, const std::string &channelId, unsigned int videoSourceType);
 
+    void Dispose();
+
     // Checks if texture registrar, texture id and texture are available.
     bool TextureRegistered()
     {
