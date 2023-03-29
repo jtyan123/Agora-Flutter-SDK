@@ -89,6 +89,10 @@
                        videoFrameBufferManager:videoFrameBufferManager];
     int64_t textureId = [textureRender textureId];
     [textureRender updateData:uid channelId:channelId videoSourceType:videoSourceType];
+    __weak typeof(self) weakSelf = self;
+        textureRender.textureUnregisteredCallback = ^(){
+            [weakSelf.textureRenders removeObjectForKey:@(textureId)];
+        };
     self.textureRenders[@(textureId)] = textureRender;
     return textureId;
 }
@@ -101,7 +105,6 @@
     TextureRender *textureRender = [self.textureRenders objectForKey:@(textureId)];
     if (textureRender != nil) {
       [textureRender dispose];
-      [self.textureRenders removeObjectForKey:@(textureId)];
       return YES;
     }
     return NO;

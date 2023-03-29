@@ -116,15 +116,7 @@ public:
 }
 
 - (void)dispose {
-    self.videoFrameBufferManager->DisableVideoFrameBuffer(self.delegate);
-    if (self.delegate) {
-        delete self.delegate;
-    }
     [self.textureRegistry unregisterTexture:self.textureId];
-    if (self.buffer_cache) {
-      CVPixelBufferRelease(self.buffer_cache);
-      self.buffer_cache = NULL;
-    }
 }
 
 - (CVPixelBufferRef _Nullable)copyPixelBuffer {
@@ -132,6 +124,18 @@ public:
 }
 
 - (void)onTextureUnregistered:(NSObject<FlutterTexture> *)texture {
+
+    self.videoFrameBufferManager->DisableVideoFrameBuffer(self.delegate);
+    if (self.delegate) {
+        delete self.delegate;
+    }
+    if (self.buffer_cache) {
+      CVPixelBufferRelease(self.buffer_cache);
+      self.buffer_cache = NULL;
+    }
+    if (self.textureUnregisteredCallback) {
+          self.textureUnregisteredCallback();
+       }
 }
 
 @end

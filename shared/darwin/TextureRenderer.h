@@ -19,7 +19,7 @@ initWithTextureRegistry:(NSObject<FlutterTextureRegistry> *)textureRegistry
 - (void)dispose;
 
 @property(nonatomic, assign) int64_t textureId;
-
+@property(nonatomic, copy)dispatch_block_t textureUnregisteredCallback;
 @end
 
 
