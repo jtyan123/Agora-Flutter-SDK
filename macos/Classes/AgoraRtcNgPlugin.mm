@@ -47,9 +47,14 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"getAssetAbsolutePath" isEqualToString:call.method]) {
         [self getAssetAbsolutePath:call result:result];
+    } else if ([@"setOutputTextureId" isEqualToString:call.method]){
+        [self.videoViewController setOutputTextureId:[call.arguments intValue]];
     } else {
         result(FlutterMethodNotImplemented);
     }
 }
 
+- (void) regOnFrame:(void (^)(CVPixelBufferRef))callback {
+    [self.videoViewController regExternalFrame:callback];
+}
 @end

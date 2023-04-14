@@ -227,6 +227,11 @@ class RtcEngineImpl extends rtc_engine_ex_binding.RtcEngineExImpl
   }
 
   @override
+  Future<void> setOutputTextureId(int textureId) async {
+    await engineMethodChannel.invokeMethod('setOutputTextureId', textureId);
+  }
+
+  @override
   Future<void> initialize(RtcEngineContext context) async {
     String externalFilesDir = '';
     if (defaultTargetPlatform == TargetPlatform.android) {

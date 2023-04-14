@@ -107,4 +107,11 @@
     return NO;
 }
 
+- (void)regExternalFrame:(void (^)(CVPixelBufferRef))callback {
+    externalFrameCallback = callback;
+}
+
+- (void) setOutputTextureId:(int64_t)textureId {
+    outputTextureId = textureId;
+}
 @end

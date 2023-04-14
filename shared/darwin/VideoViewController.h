@@ -7,10 +7,13 @@
 #import <FlutterMacOS/FlutterMacOS.h>
 #endif
 
+void (^externalFrameCallback)(CVPixelBufferRef);
+int64_t outputTextureId = 0;
+
 @interface VideoViewController : NSObject
 
 - (instancetype)initWith:(NSObject<FlutterTextureRegistry> *)textureRegistry
-               messenger: (NSObject<FlutterBinaryMessenger> *)messenger;
+               messenger:(NSObject<FlutterBinaryMessenger> *)messenger;
 
 - (int64_t)createPlatformRender;
 
@@ -23,7 +26,9 @@
 
 - (BOOL)destroyTextureRender:(int64_t)textureId;
 
-@end
+- (void)regExternalFrame:(void (^)(CVPixelBufferRef))callback;
 
+- (void)setOutputTextureId:(int64_t)textureId;
+@end
 
 #endif /* VideoViewController_h */

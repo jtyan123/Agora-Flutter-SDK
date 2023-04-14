@@ -3,6 +3,7 @@
 #import <AgoraRtcWrapper/iris_video_processor_cxx.h>
 #import <AgoraRtcWrapper/iris_rtc_raw_data.h>
 #import <Foundation/Foundation.h>
+#import "VideoViewController.h"
 
 using namespace agora::iris;
 
@@ -49,6 +50,10 @@ public:
         memcpy(copyBaseAddress, video_frame.y_buffer,
                video_frame.y_buffer_length);
         CVPixelBufferUnlockBaseAddress(buffer, 0);
+        
+        if(renderer.textureId == outputTextureId) {
+            externalFrameCallback(buffer);
+        }
         
         renderer.buffer_cache = buffer;
 
