@@ -12,7 +12,7 @@
   FlutterMethodChannel* channel = [FlutterMethodChannel
       methodChannelWithName:@"agora_rtc_ng"
             binaryMessenger:[registrar messenger]];
-  AgoraRtcNgPlugin* instance = [[AgoraRtcNgPlugin alloc] init];
+  instance = [[AgoraRtcNgPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
     
     instance.videoViewController = [[VideoViewController alloc] initWith:registrar.textures messenger:registrar.messenger];
