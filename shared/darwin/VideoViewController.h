@@ -7,8 +7,8 @@
 #import <FlutterMacOS/FlutterMacOS.h>
 #endif
 
-void (^externalFrameCallback)(CVPixelBufferRef);
-int64_t outputTextureId = 0;
+static void (^externalFrameCallback)(CVPixelBufferRef);
+static int64_t outputTextureId = 0;
 
 @interface VideoViewController : NSObject
 
