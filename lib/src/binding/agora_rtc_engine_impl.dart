@@ -1,6 +1,7 @@
 import 'package:agora_rtc_engine/src/binding_forward_export.dart';
 import 'package:agora_rtc_engine/src/binding/impl_forward_export.dart';
 import 'package:iris_method_channel/iris_method_channel.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 // ignore_for_file: public_member_api_docs, unused_local_variable, annotate_overrides
 
 class VideoDeviceManagerImpl implements VideoDeviceManager {
@@ -195,6 +196,12 @@ class RtcEngineImpl implements RtcEngine {
     if (result < 0) {
       throw AgoraRtcException(code: result);
     }
+  }
+
+  @override
+  Future<void> setOutputTextureId(int textureId) async {
+    var channel = MethodChannel('agora_rtc_ng');
+    await channel.invokeMethod('setOutputTextureId', textureId);
   }
 
   @override
@@ -5037,7 +5044,7 @@ class RtcEngineImpl implements RtcEngine {
     final result = rm['result'];
     return result as int;
   }
-  
+
   @override
   int getVideoFrameBufferManager() {
     // TODO: implement getVideoFrameBufferManager
