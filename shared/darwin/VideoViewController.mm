@@ -4,6 +4,9 @@
 #import <AgoraRtcWrapper/iris_engine_base.h>
 #import <AgoraRtcWrapper/iris_video_processor_cxx.h>
 
+void (^externalFrameCallback)(CVPixelBufferRef) = nullptr;
+int64_t outputTextureId = 0;
+
 @interface VideoViewController ()
 @property(nonatomic, weak) NSObject<FlutterTextureRegistry> *textureRegistry;
 @property(nonatomic, weak) NSObject<FlutterBinaryMessenger> *messenger;

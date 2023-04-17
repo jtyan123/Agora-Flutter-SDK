@@ -48,7 +48,7 @@
     if ([@"getAssetAbsolutePath" isEqualToString:call.method]) {
         [self getAssetAbsolutePath:call result:result];
     } else if ([@"setOutputTextureId" isEqualToString:call.method]){
-        [self.videoViewController setOutputTextureId:[call.arguments intValue]];
+        [self.videoViewController setOutputTextureId:[call.arguments longLongValue]];
     } else {
         result(FlutterMethodNotImplemented);
     }
