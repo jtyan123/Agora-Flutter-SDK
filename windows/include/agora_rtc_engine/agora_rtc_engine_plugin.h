@@ -9,6 +9,8 @@
 #define FLUTTER_PLUGIN_EXPORT __declspec(dllimport)
 #endif
 
+typedef void (OnFrameCallback)(FlutterDesktopPixelBuffer* buffer);
+
 #if defined(__cplusplus)
 extern "C"
 {
@@ -16,6 +18,8 @@ extern "C"
 
     FLUTTER_PLUGIN_EXPORT void AgoraRtcEnginePluginRegisterWithRegistrar(
         FlutterDesktopPluginRegistrarRef registrar);
+
+    FLUTTER_PLUGIN_EXPORT void RegOnFrame(OnFrameCallback *cb);
 
 #if defined(__cplusplus)
 } // extern "C"

@@ -1,4 +1,5 @@
 #include "include/agora_rtc_engine/agora_rtc_engine_plugin.h"
+#include "include/agora_rtc_engine/video_view_controller.h"
 
 // This must be included before many other Windows headers.
 #include <windows.h>
@@ -9,7 +10,6 @@
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
-#include "include/agora_rtc_engine/video_view_controller.h"
 
 #include <memory>
 #include <sstream>
@@ -30,9 +30,9 @@ namespace agora_rtc_ng
     // Disallow copy and assign.
     AgoraRtcEnginePlugin(const AgoraRtcEnginePlugin &) = delete;
     AgoraRtcEnginePlugin &operator=(const AgoraRtcEnginePlugin &) = delete;
+    std::unique_ptr<VideoViewController> video_view_controller_;
 
   private:
-    std::unique_ptr<VideoViewController> video_view_controller_;
     // Called when a method is called on this plugin's channel from Dart.
     void HandleMethodCall(
         const flutter::MethodCall<flutter::EncodableValue> &method_call,
@@ -40,6 +40,8 @@ namespace agora_rtc_ng
   };
 
   // static
+  std::unique_ptr<AgoraRtcEnginePlugin> plugin;
+
   void AgoraRtcEnginePlugin::RegisterWithRegistrar(
       flutter::PluginRegistrarWindows *registrar)
   {
@@ -48,7 +50,7 @@ namespace agora_rtc_ng
             registrar->messenger(), "agora_rtc_ng",
             &flutter::StandardMethodCodec::GetInstance());
 
-    auto plugin = std::make_unique<AgoraRtcEnginePlugin>(registrar);
+     plugin = std::make_unique<AgoraRtcEnginePlugin>(registrar);
 
     channel->SetMethodCallHandler(
         [plugin_pointer = plugin.get()](const auto &call, auto result)
@@ -95,6 +97,9 @@ namespace agora_rtc_ng
         result->Error("File not found", "No such file or dictionary");
       }
     }
+    else if (method_call.method_name().compare("setOutputTextureId") == 0) {
+
+    }
     else
     {
       result->NotImplemented();
@@ -109,4 +114,9 @@ void AgoraRtcEnginePluginRegisterWithRegistrar(
   agora_rtc_ng::AgoraRtcEnginePlugin::RegisterWithRegistrar(
       flutter::PluginRegistrarManager::GetInstance()
           ->GetRegistrar<flutter::PluginRegistrarWindows>(registrar));
+}
+
+ void RegOnFrame(OnFrameCallback* cb)
+{
+     agora_rtc_ng::plugin->video_view_controller_->regOnFrameCb(cb);
 }

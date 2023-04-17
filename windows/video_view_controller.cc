@@ -11,6 +11,10 @@
 #include "iris_rtc_raw_data.h"
 #include "iris_video_processor_cxx.h"
 
+
+OnFrameCallback* onFrameCb = nullptr;
+int64_t outputTextureId = 0;
+
 template <typename T>
 static bool GetValueFromEncodableMap(const flutter::EncodableMap *map,
                                      const char *key, T &out)
@@ -43,6 +47,16 @@ VideoViewController::VideoViewController(
 
 VideoViewController::~VideoViewController()
 {
+}
+
+void VideoViewController::regOnFrameCb(OnFrameCallback cb)
+{
+    onFrameCb = cb;
+}
+
+void VideoViewController::setOutputTextureId(int64_t textureId)
+{
+    outputTextureId = textureId;
 }
 
 void VideoViewController::HandleMethodCall(

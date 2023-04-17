@@ -9,6 +9,11 @@
 
 #include <map>
 #include <mutex>
+#include "agora_rtc_engine_plugin.h"
+
+
+extern OnFrameCallback *onFrameCb;
+extern int64_t outputTextureId;
 
 class VideoViewController
 {
@@ -36,6 +41,9 @@ private:
 public:
     VideoViewController(flutter::TextureRegistrar *texture_registrar, flutter::BinaryMessenger *messenger_);
     virtual ~VideoViewController();
+
+    void regOnFrameCb(OnFrameCallback cb);
+    void setOutputTextureId(int64_t textureId);
 };
 
 #endif // VIDEO_VIEW_CONTROLLER_H_
