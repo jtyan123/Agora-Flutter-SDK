@@ -15,6 +15,8 @@
 #include <sstream>
 #include <filesystem>
 
+VideoViewController* vc;
+
 namespace agora_rtc_ng
 {
 
@@ -22,6 +24,8 @@ namespace agora_rtc_ng
   {
   public:
     static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
+
+    static std::unique_ptr<AgoraRtcEnginePlugin> GetPlugin();
 
     AgoraRtcEnginePlugin(flutter::PluginRegistrarWindows *registrar);
 
@@ -40,8 +44,6 @@ namespace agora_rtc_ng
   };
 
   // static
-  std::unique_ptr<AgoraRtcEnginePlugin> plugin;
-
   void AgoraRtcEnginePlugin::RegisterWithRegistrar(
       flutter::PluginRegistrarWindows *registrar)
   {
@@ -50,7 +52,7 @@ namespace agora_rtc_ng
             registrar->messenger(), "agora_rtc_ng",
             &flutter::StandardMethodCodec::GetInstance());
 
-     plugin = std::make_unique<AgoraRtcEnginePlugin>(registrar);
+    auto plugin = std::make_unique<AgoraRtcEnginePlugin>(registrar);
 
     channel->SetMethodCallHandler(
         [plugin_pointer = plugin.get()](const auto &call, auto result)
@@ -66,6 +68,7 @@ namespace agora_rtc_ng
     video_view_controller_ = std::make_unique<VideoViewController>(
         registrar->texture_registrar(),
         registrar->messenger());
+    vc = video_view_controller_.get();
   }
 
   AgoraRtcEnginePlugin::~AgoraRtcEnginePlugin() {}
@@ -98,7 +101,8 @@ namespace agora_rtc_ng
       }
     }
     else if (method_call.method_name().compare("setOutputTextureId") == 0) {
-
+        vc->setOutputTextureId(method_call.arguments()->LongValue());
+        result->Success();
     }
     else
     {
@@ -118,5 +122,7 @@ void AgoraRtcEnginePluginRegisterWithRegistrar(
 
  void RegOnFrame(OnFrameCallback* cb)
 {
-     agora_rtc_ng::plugin->video_view_controller_->regOnFrameCb(cb);
+     std::cout << "=============================";
+     vc->regOnFrameCb(cb);
 }
+  
