@@ -68,12 +68,7 @@ void TextureRender::OnVideoFrameReceived(const IrisVideoFrame &video_frame,
     std::copy(static_cast<uint8_t *>(video_frame.y_buffer), static_cast<uint8_t *>(video_frame.y_buffer) + data_size, buffer_.data());
 
     if (onFrameCb != nullptr && outputTextureId == texture_id_) {
-        
-        auto buf = std::make_unique<FlutterDesktopPixelBuffer>();
-        buf->buffer = buffer_.data();
-        buf->width = video_frame.width;
-        buf->height = video_frame.height;
-        onFrameCb(std::move(buf));
+        onFrameCb(buffer_, video_frame.width, video_frame.height);
     }
 
     frame_width_ = video_frame.width;

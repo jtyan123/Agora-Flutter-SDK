@@ -3,6 +3,7 @@
 
 #include <flutter_plugin_registrar.h>
 #include <memory>
+#include <vector>
 
 #ifdef FLUTTER_PLUGIN_IMPL
 #define FLUTTER_PLUGIN_EXPORT __declspec(dllexport)
@@ -10,7 +11,7 @@
 #define FLUTTER_PLUGIN_EXPORT __declspec(dllimport)
 #endif
 
-typedef void (OnFrameCallback)(std::unique_ptr<FlutterDesktopPixelBuffer> buffer);
+typedef void (OnFrameCallback)(std::vector<uint8_t> data, size_t width, size_t height);
 
 #if defined(__cplusplus)
 extern "C"
