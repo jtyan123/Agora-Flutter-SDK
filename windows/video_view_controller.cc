@@ -51,12 +51,12 @@ VideoViewController::~VideoViewController()
 
 void VideoViewController::regOnFrameCb(OnFrameCallback cb)
 {
-    onFrameCb = cb;
+  onFrameCb = cb;
 }
 
 void VideoViewController::setOutputTextureId(int64_t textureId)
 {
-    outputTextureId = textureId;
+  outputTextureId = textureId;
 }
 
 void VideoViewController::HandleMethodCall(
@@ -74,25 +74,34 @@ void VideoViewController::HandleMethodCall(
       return;
     }
 
-    intptr_t videoFrameBufferManagerNativeHandle;
-    if (!GetValueFromEncodableMap(arguments, "videoFrameBufferManagerNativeHandle", videoFrameBufferManagerNativeHandle))
+    int64_t videoFrameBufferManagerNativeHandle;
     {
-      result->Error("Invalid arguments", "No videoFrameBufferManagerNativeHandle provided.");
-      return;
+      auto iter = arguments->find(flutter::EncodableValue(flutter::EncodableValue("videoFrameBufferManagerNativeHandle")));
+      if (iter != arguments->end() && !iter->second.IsNull())
+      {
+        // The `videoFrameBufferManagerNativeHandle` maybe in 32-bit on some devices, we need call `LongValue` explictly
+        videoFrameBufferManagerNativeHandle = iter->second.LongValue();
+      }
+      else
+      {
+        result->Error("Invalid arguments", "No videoFrameBufferManagerNativeHandle provided.");
+        return;
+      }
     }
 
     int64_t uid;
-
-    auto iter = arguments->find(flutter::EncodableValue(flutter::EncodableValue("uid")));
-    if (iter != arguments->end() && !iter->second.IsNull())
     {
-      // The uid may between 32-bit and 64-bit value, we need call `LongValue` explictly
-      uid = iter->second.LongValue();
-    }
-    else
-    {
-      result->Error("Invalid arguments", "No uid provided.");
-      return;
+      auto iter = arguments->find(flutter::EncodableValue(flutter::EncodableValue("uid")));
+      if (iter != arguments->end() && !iter->second.IsNull())
+      {
+        // The uid may between 32-bit and 64-bit value, we need call `LongValue` explictly
+        uid = iter->second.LongValue();
+      }
+      else
+      {
+        result->Error("Invalid arguments", "No uid provided.");
+        return;
+      }
     }
 
     std::string channelId;
